@@ -1,0 +1,16 @@
+{
+    "name": "mlapai/star-fleet-commander",
+    "description": "Assembling a fleet",
+    "authors": [
+        {
+            "name": "Mladen Paic",
+            "email": "paic.m@live.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.0.3"
+    },
+    "autoload": {
+        "psr-4": { "": "src/" }
+    }
+}
