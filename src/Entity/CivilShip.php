@@ -12,4 +12,6 @@ namespace Entity;
  */
 class CivilShip extends Ship
 {
+    public const TYPE_TRANSPORT   = 4;
+    public const TYPE_RECREATION  = 5;
 }

@@ -12,4 +12,7 @@ namespace Entity;
  */
 class MilitaryShip extends Ship
 {
+    public const TYPE_DREADNOUGHT = 1;
+    public const TYPE_INTERCEPTOR = 2;
+    public const TYPE_LEVIATHAN   = 3;
 }
