@@ -14,7 +14,7 @@ use Entity\FleetInterface;
 interface FleetCommanderInterface
 {
     /**
-     * Assamle fleet with attacking positions
+     * Assamble fleet with attacking positions
      *
      * @access public
      * @return FleetInterface
@@ -22,7 +22,7 @@ interface FleetCommanderInterface
     public function assambleAttackPositionsFleet(): FleetInterface;
 
     /**
-     * Assamle fleet with escort positions
+     * Assamble fleet with escort positions
      *
      * @access public
      * @return FleetInterface

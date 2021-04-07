@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Service;
 
-use Entity\Dreadnought;
-use Entity\Fleet;
 use Entity\FleetInterface;
-use Entity\Interceptor;
-use Entity\Leviathan;
-use Entity\Recreation;
-use Entity\Transport;
+use Exception\ShipsNotFoundException;
+use Factory\FleetFactoryInterface;
+use Repository\ShipRepository;
 
 /**
  * StarFleetCommander
@@ -20,25 +17,37 @@ use Entity\Transport;
  */
 final class StarFleetCommander implements FleetCommanderInterface
 {
-    private $shipFactory;
-
+    /**
+     * @var FleetFactoryInterface $fleetFactory
+     */
     private $fleetFactory;
 
+    /**
+     * @var ShipRepository $shipRepository
+     */
     private $shipRepository;
+
+    /**
+     * @var LoggerInterface $logger
+     */
+    private $logger;
 
     /**
      * Constructor
      *
-     * @param mixed $shipFactory
-     * @param mixed $fleetFactory
-     * @param mixed $shipRepository
+     * @param FleetFactoryInterface $fleetFactory
+     * @param ShipRepository $shipRepository
+     * @param LoggerInterface $logger
      * @access public
      */
-    public function __construct($shipFactory, $fleetFactory, $shipRepository)
-    {
-        $this->shipFactory    = $shipFactory;
+    public function __construct(
+        FleetFactoryInterface $fleetFactory,
+        ShipRepository $shipRepository,
+        LoggerInterface $logger
+    ) {
         $this->fleetFactory   = $fleetFactory;
         $this->shipRepository = $shipRepository;
+        $this->logger         = $logger;
     }
 
 
@@ -75,30 +84,15 @@ final class StarFleetCommander implements FleetCommanderInterface
      */
     public function assambleFleet(): FleetInterface
     { 
-        $dreadnought  = new Dreadnought(5, false);
-        $dreadnought1 = new Dreadnought(5, false);
-        $dreadnought2 = new Dreadnought(5, false);
-        $interceptor  = new Interceptor(4, true);
-        $leviathan1   = new Leviathan(3, false);
-        $leviathan2   = new Leviathan(3, false);
-        $transport1   = new Transport(2, true);
-        $transport2   = new Transport(2, true);
-        $recreation   = new Recreation(1, true);
+        try {
+            $ships = $this->shipRepository->getAll();
+            $fleet = $this->fleetFactory->createFleet(...$ships);
+        } catch (ShipsNotFoundException $e) {
+            $this->logger->log($e->getMessage());
 
-        return new Fleet(
-            $transport1,
-            $leviathan1,
-            $interceptor,
-            $dreadnought,
-            $recreation,
-            $dreadnought2,
-            $leviathan2,
-            $transport2,
-            $dreadnought1,
-        );
+            throw $e;
+        }
 
-        // load ships with repo
-        // @todo ship factory to produce ships
-        // @todo fleet factory to produce fleet
+        return $fleet;
     }
 }
