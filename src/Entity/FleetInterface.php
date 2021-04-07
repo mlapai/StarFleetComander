@@ -36,12 +36,12 @@ interface FleetInterface
     public function getFormation(): array;
 
     /**
-     * getFormationType
+     * Get current formation type
      *
      * @access public
      * @return intvoid
      */
-    public function getFormationType(): int;
+    public function getCurrentFormationType(): int;
 
     /**
      * Add ship to the fleet

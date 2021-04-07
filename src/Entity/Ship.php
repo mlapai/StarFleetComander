@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Entity;
 
+use ReflectionClass;
+
 /**
  * Ship
  *
@@ -72,5 +74,16 @@ abstract class Ship
     public function captainHasExp(): bool
     {
         return $this->captainExp;
+    }
+
+    /**
+     * getShipName
+     *
+     * @access public
+     * @return string
+     */
+    public function getName(): string
+    {
+        return (new ReflectionClass($this))->getShortName();
     }
 }

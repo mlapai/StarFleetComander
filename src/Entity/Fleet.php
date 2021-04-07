@@ -15,6 +15,7 @@ use InvalidArgumentException;
  */
 final class Fleet implements FleetInterface
 {
+    // position code
     public const RANDOM_POSITIONS    = 0;
     public const ATTACKING_POSITIONS = 1;
     public const ESCORT_POSITIONS    = 2;
@@ -25,20 +26,18 @@ final class Fleet implements FleetInterface
         self::ESCORT_POSITIONS    => self::ESCORT_POSITIONS
     ];
 
-    /**
-     * @param Ship[] $ships 
-     * @return void 
-     */
+    private const INEXPERIENCED_CAPTAIN_SUFFIX  = "Junior";
+
     private array $formation;
 
-    private int $formationType = self::RANDOM_POSITIONS;
+    private int $currentFormationType = self::RANDOM_POSITIONS;
 
-    public array $callSignNumbers;
+    public array $callSignNumbers = [];
 
     /**
      * Constructor
      *
-     * @param Ship... $Ship
+     * @param Ship... $ships
      * @access public
      */
     public function __construct(Ship ...$ships)
@@ -52,8 +51,12 @@ final class Fleet implements FleetInterface
      */
     public function attackPositions(): void 
     { 
-        // @todo do the magic
-        $this->formationType = self::ATTACKING_POSITIONS;
+        if ($this->currentFormationType === self::ATTACKING_POSITIONS) {
+            return;
+        }
+
+        usort($this->formation, fn($a, $b) => $b->getStrength() - $a->getStrength());
+        $this->currentFormationType = self::ATTACKING_POSITIONS;
     }
 
     /**
@@ -61,8 +64,26 @@ final class Fleet implements FleetInterface
      */
     public function escortPositions(): void 
     {
-        // @todo do the magic
-        $this->formationType = self::ESCORT_POSITIONS;
+        if ($this->currentFormationType === self::ESCORT_POSITIONS) {
+            return;
+        }
+
+        list($militaryShips, $civilShips) = $this->groupByType();
+
+        // round up to always have higher amount of ships in front
+        $middle       = (int) round(count($militaryShips) / 2);
+        $newFormation = $militaryShips;
+
+        // if we had sorted military ships array, shuffle to achieve mixed strength
+        if ($this->currentFormationType !== self::RANDOM_POSITIONS) {
+            shuffle($newFormation);
+        }
+
+        // insert civil ships into the middle
+        array_splice($newFormation, $middle, 0, $civilShips);
+
+        $this->formation            = $newFormation;
+        $this->currentFormationType = self::ESCORT_POSITIONS;
     }
 
     /**
@@ -76,9 +97,9 @@ final class Fleet implements FleetInterface
     /**
      * {@inheritdoc}
      */
-    public function getFormationType(): int 
+    public function getCurrentFormationType(): int
     {
-        return $this->formationType;
+        return $this->currentFormationType;
     }
 
     /**
@@ -89,8 +110,8 @@ final class Fleet implements FleetInterface
         $this->formation[] = $ship;
         $this->reapplyFormation();
 
-        $uniqueFleetNumber = max($this->callSignNumbers) + 1;
-        $this->nameShip($ship, $uniqueFleetNumber);
+        $uniqueShipNumber = max($this->callSignNumbers) + 1;
+        $this->nameShip($ship, $uniqueShipNumber);
 
         return true;
     }
@@ -107,6 +128,7 @@ final class Fleet implements FleetInterface
         }
 
         unset($this->formation[$key]);
+        unset($this->callSignNumbers[spl_object_hash($ship)]);
         $this->reapplyFormation();
 
         return true;
@@ -117,11 +139,11 @@ final class Fleet implements FleetInterface
      */
     public function reapplyFormation(): void
     {
-        if ($this->formationType === self::RANDOM_POSITIONS) {
+        if ($this->currentFormationType === self::RANDOM_POSITIONS) {
             return;
         }
 
-        $this->formation = $this->formationType === self::ATTACKING_POSITIONS
+        $this->formation = $this->currentFormationType === self::ATTACKING_POSITIONS
             ? $this->attackPositions()
             : $this->escortPositions();
     }
@@ -135,7 +157,7 @@ final class Fleet implements FleetInterface
     private function nameShips(): void
     {
         foreach ($this->formation as $key => $ship) {
-            $shipNumber = $key + 1;
+            $shipNumber = ++$key;
             $this->nameShip($ship, $shipNumber);
         }
     }
@@ -154,10 +176,17 @@ final class Fleet implements FleetInterface
             throw new InvalidArgumentException("Ship number $shipNumber must be unique within the fleet");
         }
 
-        $callSign = get_class($ship) . " " . $shipNumber . $this->getShipSufix($ship);
+        $shipName  = $ship->getName();
+        $callSign  = "$shipName $shipNumber";
+        $shipSufix = $this->getShipSufix($ship);
+
+        if ($shipSufix) {
+            $callSign .= " $shipSufix";
+        }
 
         $ship->setCallSign($callSign);
-        $this->callSignNumbers[] = $shipNumber;
+        // track sign numbers because of adding/removing ships
+        $this->callSignNumbers[spl_object_hash($ship)] = $shipNumber;
     }
 
     /**
@@ -169,6 +198,31 @@ final class Fleet implements FleetInterface
      */
     private function getShipSufix(Ship $ship): string
     {
-        return (!$ship->captainHasExp() ? "Junior" : "");
+        return !$ship->captainHasExp() ? self::INEXPERIENCED_CAPTAIN_SUFFIX : "";
+    }
+
+    /**
+     * groupByType
+     *
+     * @access private
+     * @return array
+     */
+    private function groupByType(): array
+    {
+        $militaryShips = [];
+        $civilShips    = [];
+
+        foreach ($this->formation as $ship) {
+
+            if ($ship instanceof MilitaryShip) {
+                $militaryShips[] = $ship;
+
+                continue;
+            }
+
+            $civilShips[] = $ship;
+        }
+
+        return [$militaryShips, $civilShips];
     }
 }

@@ -10,6 +10,6 @@ namespace Entity;
  * @uses MilitaryShip
  * @package Entity
  */
-final class Leivathan extends MilitaryShip
+final class Leviathan extends MilitaryShip
 {
 }
