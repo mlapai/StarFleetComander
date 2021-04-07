@@ -42,6 +42,8 @@ final class Fleet implements FleetInterface
      */
     public function __construct(Ship ...$ships)
     {
+        // @todo validate presence of each ship ?
+
         $this->formation = $ships;
         $this->nameShips();
     }
@@ -55,7 +57,16 @@ final class Fleet implements FleetInterface
             return;
         }
 
-        usort($this->formation, fn($a, $b) => $b->getStrength() - $a->getStrength());
+        list($militaryShips, $civilShips) = $this->groupByType();
+
+        // since i have random str for each ship, both groups need to be sorted by str separately
+        // if this was constant str per ship type i could've used only one sort and be done with it
+        usort($militaryShips, fn($a, $b) => $b->getStrength() - $a->getStrength());
+        usort($civilShips, fn($a, $b) => $b->getStrength() - $a->getStrength());
+
+        // merge and append civil at the end
+        $newFormation               = array_merge($militaryShips, $civilShips);
+        $this->formation            = $newFormation;
         $this->currentFormationType = self::ATTACKING_POSITIONS;
     }
 
@@ -70,7 +81,8 @@ final class Fleet implements FleetInterface
 
         list($militaryShips, $civilShips) = $this->groupByType();
 
-        // round up to always have higher amount of ships in front
+        // if it's odd number
+        // round up to always have higher amount of ships in front of fleet
         $middle       = (int) round(count($militaryShips) / 2);
         $newFormation = $militaryShips;
 
@@ -79,7 +91,7 @@ final class Fleet implements FleetInterface
             shuffle($newFormation);
         }
 
-        // insert civil ships into the middle
+        // insert civil ships into the middle of military ones
         array_splice($newFormation, $middle, 0, $civilShips);
 
         $this->formation            = $newFormation;
@@ -143,6 +155,7 @@ final class Fleet implements FleetInterface
             return;
         }
 
+        // violation of open close ?
         $this->formation = $this->currentFormationType === self::ATTACKING_POSITIONS
             ? $this->attackPositions()
             : $this->escortPositions();
@@ -163,7 +176,9 @@ final class Fleet implements FleetInterface
     }
 
     /**
-     * Give 
+     * nameShip
+     *
+     * @todo Maybe not responsibility of Fleet class
      *
      * @param Ship $ship
      * @param int $shipNumber
@@ -191,6 +206,8 @@ final class Fleet implements FleetInterface
 
     /**
      * Determine ship suffix depending on the captain exp
+     *
+     * @todo Maybe not responsibility of Fleet class
      *
      * @param Ship $ship
      * @access private

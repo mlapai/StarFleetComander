@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Repository;
 
-use Entity\CivilShip;
-use Entity\MilitaryShip;
 use Exception\ShipsNotFoundException;
-use Factory\ShipFactory;
+use Service\ShipDataGeneratorInterface;
 
 /**
  * ShipRepository
@@ -19,32 +17,27 @@ use Factory\ShipFactory;
 final class ShipRepository implements EntityRepository
 {
     /**
+     * @var ShipDataGeneratorInterface $shipDataGenerator
+     */
+    private $shipDataGenerator;
+
+    /**
+     * Constructor
+     *
+     * @param ShipDataGeneratorInterface $shipDataGenerator
+     * @access public
+     */
+    public function __construct(ShipDataGeneratorInterface $shipDataGenerator)
+    {
+        $this->shipDataGenerator = $shipDataGenerator;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function findAll(): array
     {
-
-        $dreadnought  = ShipFactory::createShip(MilitaryShip::TYPE_DREADNOUGHT, 5, false);
-        $dreadnought1 = ShipFactory::createShip(MilitaryShip::TYPE_DREADNOUGHT, 5, false);
-        $dreadnought2 = ShipFactory::createShip(MilitaryShip::TYPE_DREADNOUGHT, 5, false);
-        $interceptor  = ShipFactory::createShip(MilitaryShip::TYPE_INTERCEPTOR, 4, true);
-        $leviathan1   = ShipFactory::createShip(MilitaryShip::TYPE_LEVIATHAN, 3, false);
-        $leviathan2   = ShipFactory::createShip(MilitaryShip::TYPE_LEVIATHAN, 3, false);
-        $transport1   = ShipFactory::createShip(CivilShip::TYPE_TRANSPORT, 2, true);
-        $transport2   = ShipFactory::createShip(CivilShip::TYPE_TRANSPORT, 2, true);
-        $recreation   = ShipFactory::createShip(CivilShip::TYPE_RECREATION, 1, true);
-
-        return [
-            $transport1,
-            $leviathan1,
-            $interceptor,
-            $dreadnought,
-            $recreation,
-            $dreadnought2,
-            $leviathan2,
-            $transport2,
-            $dreadnought1
-        ];
+        return $this->shipDataGenerator->generateShips();
     }
 
     /**

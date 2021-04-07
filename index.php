@@ -7,15 +7,19 @@ require __DIR__.'/vendor/autoload.php';
 use Factory\FleetFactory;
 use Repository\ShipRepository;
 use Service\NullLogger;
+use Service\RandomShipDataGenerator;
 use Service\StarFleetCommander;
 
-$shipRepository = new ShipRepository();
-$fleetFactory   = new FleetFactory();
-$logger         = new NullLogger();
+// should be in DIC
+$randomShipDataGenerator = new RandomShipDataGenerator();
+$shipRepository          = new ShipRepository($randomShipDataGenerator);
+$fleetFactory            = new FleetFactory();
+$logger                  = new NullLogger();
 
 $starShipCommander = new StarFleetCommander($fleetFactory, $shipRepository, $logger);
 $fleet             = $starShipCommander->assambleAttackPositionsFleet();
 
+// could be presented with command pattern
 print_r($fleet->getFormation());
 
 $starShipCommander->assambleEscortPositionsFleet($fleet);
