@@ -10,7 +10,7 @@ use Factory\FleetFactoryInterface;
 use Repository\ShipRepository;
 
 /**
- * StarFleetCommander
+ * StarFleetCommander aka SUPREME LEADER
  *
  * @uses FleetCommanderInterface
  * @package Service
