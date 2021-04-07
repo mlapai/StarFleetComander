@@ -20,8 +20,10 @@ $starShipCommander = new StarFleetCommander($fleetFactory, $shipRepository, $log
 $fleet             = $starShipCommander->assambleAttackPositionsFleet();
 
 // could be presented with command pattern
+print_r("########################################### ATTACK POSITIONS ###########################################");
 print_r($fleet->getFormation());
 
 $starShipCommander->assambleEscortPositionsFleet($fleet);
 
+print_r("########################################### ESCORT POSITIONS ###########################################");
 print_r($fleet->getFormation());
