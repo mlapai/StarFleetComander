@@ -18,6 +18,7 @@ final class RandomShipDataGenerator implements ShipDataGeneratorInterface
 {
     public const MAX_NUMBER_OF_SAME_SHIPS = 5;
     public const MIN_NUMBER_OF_SAME_SHIPS = 1;
+    public const MAX_SHIP_STRENGTH        = 5;
 
     /**
      * Generate random number of each ship type
@@ -32,11 +33,10 @@ final class RandomShipDataGenerator implements ShipDataGeneratorInterface
 
         foreach ($shipTypes as $shipType) {
 
-            $shipStrength     = rand(1, count($shipTypes));
             $numberOfSameShip = rand(self::MIN_NUMBER_OF_SAME_SHIPS, self::MAX_NUMBER_OF_SAME_SHIPS);
             $captainExp       = (bool) rand(0, 1);
 
-            $ships[] = $this->generateShipXTimes($shipType, $shipStrength, $numberOfSameShip, $captainExp);
+            $ships[] = $this->generateShipXTimes($shipType, $numberOfSameShip, $captainExp);
         }
 
         // flatten two dimensional array
@@ -52,7 +52,7 @@ final class RandomShipDataGenerator implements ShipDataGeneratorInterface
      * @access private
      * @return array
      */
-    private function generateShipXTimes(int $shipType, int $strength, int $x, bool $captainExp): array
+    private function generateShipXTimes(int $shipType, int $x, bool $captainExp): array
     {
         if ($x === 0) {
             return [];
@@ -61,7 +61,8 @@ final class RandomShipDataGenerator implements ShipDataGeneratorInterface
         $ships = [];
 
         for ($i = 1; $i <= $x; $i++) {
-            $ships[] = ShipFactory::createShip($shipType, $strength, $captainExp);
+            $shipStrength = rand(1, self::MAX_SHIP_STRENGTH);
+            $ships[] = ShipFactory::createShip($shipType, $shipStrength, $captainExp);
         }
 
         return $ships;
